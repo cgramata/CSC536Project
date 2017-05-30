@@ -5,13 +5,15 @@ import common._
 class MasterActor extends Actor {
 	val numberKioskActors = ConfigFactory.load.getInt("number-kioskActors")
 	val numberClientActors = ConfigFactory.load.getInt("number-clientActors")
-	val numberTickets = ConfigFactory.load.getInt("number-TicketsA")
+	var numberTickets = ConfigFactory.load.getInt("number-TicketsA")
 	var leftNeighbor = self
 	var rightNeighbor = self
+
 
 	def receive = {
 		case Neighbors(leftNeighbor, rightNeighbor) => 
 			leftNeighbor = leftNeighbor
 			rightNeighbor = rightNeighbor
+
 	}
 }
