@@ -10,6 +10,6 @@ class MasterActor extends Actor {
 	var rightNeighbor = self
 
 	def receive = {
-		case ajl;df;alsjdf
+		case 
 	}
 }
