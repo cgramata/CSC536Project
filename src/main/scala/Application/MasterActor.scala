@@ -10,6 +10,8 @@ class MasterActor extends Actor {
 	var rightNeighbor = self
 
 	def receive = {
-		case 
+		case Neighbors(leftNeighbor, rightNeighbor) => 
+			leftNeighbor = leftNeighbor
+			rightNeighbor = rightNeighbor
 	}
 }
