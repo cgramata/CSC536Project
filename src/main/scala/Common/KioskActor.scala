@@ -6,7 +6,9 @@ import common._
 
 class KioskActor extends Actor {
 
-	var numberTicketsInKiosk = ConfigFactory.load.getInt("number-TicketsPerKiosk")
+	var numberTicketsInKiosk = 0
+	var numberMaxNumberOfTickets = ConfigFactory.load.getInt("number-TicketsPerKiosk")
+	var isEventSoldOut = False
 	var leftNeighbor = self
 	var rightNeighbor = self
 
