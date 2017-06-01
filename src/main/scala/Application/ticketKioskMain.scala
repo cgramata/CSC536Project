@@ -1,8 +1,9 @@
 package Application 
 
 import akka.actor.{ActorSystem, Props}
+import Common._
 
-object MapReduceClient extends App {
+object TicketKioskMain extends App {
 
 	val system = ActorSystem("ticketKiosk")
 

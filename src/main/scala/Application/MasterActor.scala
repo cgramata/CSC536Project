@@ -3,7 +3,7 @@ package Application
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import scala.collection.mutable.ListBuffer
 import com.typesafe.config.ConfigFactory
-import common._
+import Common._
 
 class MasterActor extends Actor {
 
@@ -11,11 +11,11 @@ class MasterActor extends Actor {
 	val numberClientActors = ConfigFactory.load.getInt("number-clientActors")
 	var numberTickets = ConfigFactory.load.getInt("number-TicketsA")
 	var listOfKioskActorRefs = new ListBuffer[ActorRef]()
-	var leftNeighbor = self
-	var rightNeighbor = self
+	var leftActorNeighbor = self
+	var rightActorNeighbor = self
 
 	for (i <- 1 to numberKioskActors) {
-		listOfKioskActorRefs = context.actorOf(Props[KioskActors], name = "Kiosk"+i)::listOfKioskActorRefs
+		listOfKioskActorRefs += context.actorOf(Props[KioskActor], name = "Kiosk"+i)
 	}
 
 	for (i <- 0 to listOfKioskActorRefs.size-1) {
@@ -30,13 +30,18 @@ class MasterActor extends Actor {
 		}		
 	}
 
-	leftNeighbor = listOfKioskActorRefs(listOfKioskActorRefs.size-1)
-	rightNeighbor = listOfKioskActorRefs(0)
+	leftActorNeighbor = listOfKioskActorRefs(listOfKioskActorRefs.size-1)
+	rightActorNeighbor = listOfKioskActorRefs(0)
+
+	if (numberTickets == 0) {
+		rightActorNeighbor ! SoldOut
+	}
 
 	def receive = {
-		case Neighbors(leftNeighbor, rightNeighbor) => 
-			leftNeighbor = leftNeighbor
-			rightNeighbor = rightNeighbor
+		case Start => 
+			rightActorNeighbor ! End
+		case End =>
+			println("Start messaged received, cycle test complete.")
 	}
 
 
