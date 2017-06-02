@@ -21,11 +21,9 @@ class MasterActor extends Actor {
 	for (i <- 0 to listOfKioskActorRefs.size-1) {
 		if (i == 0) {
 			listOfKioskActorRefs(i) ! Neighbors(self, listOfKioskActorRefs(i+1))
-		}
-		if (i == listOfKioskActorRefs.size-1) {
+		} else if (i == listOfKioskActorRefs.size-1) {
 			listOfKioskActorRefs(i) ! Neighbors(listOfKioskActorRefs(i-1), self)
-		}
-		else {
+		} else {
 			listOfKioskActorRefs(i) ! Neighbors(listOfKioskActorRefs(i-1), listOfKioskActorRefs(i+1))
 		}		
 	}
@@ -39,9 +37,10 @@ class MasterActor extends Actor {
 
 	def receive = {
 		case Start => 
+			println(self.path.name + " sending start message")
 			rightActorNeighbor ! End
 		case End =>
-			println("Start messaged received, cycle test complete.")
+			println(self.path.name + " received start messaged, cycle test complete.")
 	}
 
 

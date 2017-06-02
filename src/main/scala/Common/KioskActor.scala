@@ -17,6 +17,7 @@ class KioskActor extends Actor {
 			leftActorNeighbor = leftNeighbor
 			rightActorNeighbor = rightNeighbor
 		case End => 
+			println(self.path.name + " received end message, sending to " + rightActorNeighbor.path.name)
 			rightActorNeighbor ! End
 	}
 

@@ -10,4 +10,8 @@ object TicketKioskMain extends App {
 	val master = system.actorOf(Props[MasterActor], name = "master")
 
 	master ! Start
+
+	Thread.sleep(5000)
+
+	system.terminate
 }
