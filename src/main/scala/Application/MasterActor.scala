@@ -10,6 +10,7 @@ class MasterActor extends Actor {
 	val numberKioskActors = ConfigFactory.load.getInt("number-kioskActors")
 	val numberClientActors = ConfigFactory.load.getInt("number-clientActors")
 	var numberTickets = ConfigFactory.load.getInt("number-TicketsA")
+	var numberOfTicketsNeededPerKiosk = ConfigFactory.load.getInt("number-TicketsPerKiosk")
 	var listOfKioskActorRefs = new ListBuffer[ActorRef]()
 	var leftActorNeighbor = self
 	var rightActorNeighbor = self
@@ -37,10 +38,16 @@ class MasterActor extends Actor {
 
 	def receive = {
 		case Start => 
-			println(self.path.name + " sending start message")
-			rightActorNeighbor ! End
-		case End =>
-			println(self.path.name + " received start messaged, cycle test complete.")
+			var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
+			numberTickets = numberTickets - numberOfTicketsSentAround
+			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets")
+			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+		case TicketsFromMaster(ticketsSentAround) =>
+			println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
+			if (ticketsSentAround > 0) {
+				numberTickets = numberTickets + ticketsSentAround
+			}
+			println(self.path.name + " has " + numberTickets + " tickets.")
 	}
 
 
