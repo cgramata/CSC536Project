@@ -45,8 +45,13 @@ class MasterActor extends Actor {
 		case TicketsFromMaster(ticketsSentAround) =>
 			println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
 			if (ticketsSentAround > 0) {
-				numberTickets = numberTickets + ticketsSentAround
+				numberTickets = numberTickets + ticketsSentAround				
 			}
+			if (numberTickets > 0) {
+				Thread.sleep(2000)
+				println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets.")
+				rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+			} 
 			println(self.path.name + " has " + numberTickets + " tickets.")
 		case SoldOut => 
 			println(self.path.name + ": sold out message delivered successfully.")
