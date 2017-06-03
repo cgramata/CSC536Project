@@ -18,6 +18,7 @@ class KioskActor extends Actor {
 			rightActorNeighbor = rightNeighbor
 		case SoldOut => 
 			isEventSoldOut = true
+			rightActorNeighbor ! SoldOut
 		case TicketsFromMaster(ticketsSentAround) =>
 			var ticketsNeededFromMaster = numberOfTicketsNeededPerKiosk - numberTicketsInKiosk
 			if (ticketsNeededFromMaster != 0 && ticketsSentAround >= ticketsNeededFromMaster) {

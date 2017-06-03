@@ -48,6 +48,8 @@ class MasterActor extends Actor {
 				numberTickets = numberTickets + ticketsSentAround
 			}
 			println(self.path.name + " has " + numberTickets + " tickets.")
+		case SoldOut => 
+			println(self.path.name + ": sold out message delivered successfully.")
 	}
 
 
