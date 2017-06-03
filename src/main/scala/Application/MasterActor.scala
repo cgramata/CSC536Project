@@ -56,6 +56,4 @@ class MasterActor extends Actor {
 		case SoldOut => 
 			println(self.path.name + ": sold out message delivered successfully.")
 	}
-
-
 }
