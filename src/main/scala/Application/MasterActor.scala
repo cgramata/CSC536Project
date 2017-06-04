@@ -40,30 +40,29 @@ class MasterActor extends Actor {
 			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets")
 			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
 		case TicketsFromMaster(ticketsSentAround) =>
+		var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
 			println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
 			if (ticketsSentAround > 0) {
 				numberOfEventTickets = numberOfEventTickets + ticketsSentAround				
 			}
 			println(self.path.name + " has " + numberOfEventTickets + " tickets.")
+			if (numberOfEventTickets > 0) {
+				Thread.sleep(1000)
+			if (numberOfEventTickets > numberOfTicketsSentAround) {
+				numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
+				println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
+				rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+			} else if (numberOfEventTickets < numberOfTicketsSentAround) {
+				numberOfEventTickets = numberOfEventTickets - numberOfEventTickets
+				println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
+				rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+			}
+		}
 		case SoldOut => 
 			println(self.path.name + ": sold out message delivered successfully.")
 	}
 
 	if (numberOfEventTickets == 0) {
 		rightActorNeighbor ! SoldOut
-	}
-
-	while (numberOfEventTickets > 0) {
-		Thread.sleep(100)
-		var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
-		if (numberOfEventTickets > numberOfTicketsSentAround) {
-			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
-			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
-		}
-		if (numberOfEventTickets < numberOfTicketsSentAround) {
-			println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
-			rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
-		}
-		
 	}
 }
