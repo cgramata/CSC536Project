@@ -47,22 +47,20 @@ class MasterActor extends Actor {
 			}
 			println(self.path.name + " has " + numberOfEventTickets + " tickets.")
 			if (numberOfEventTickets > 0) {
-				Thread.sleep(1000)
-			if (numberOfEventTickets > numberOfTicketsSentAround) {
-				numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
-				println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
-				rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
-			} else if (numberOfEventTickets < numberOfTicketsSentAround) {
-				numberOfEventTickets = numberOfEventTickets - numberOfEventTickets
-				println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
-				rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+				if (numberOfEventTickets > numberOfTicketsSentAround) {
+					numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
+					println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
+					rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+				} else if (numberOfEventTickets < numberOfTicketsSentAround) {
+					numberOfEventTickets = numberOfEventTickets - numberOfEventTickets
+					println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
+					rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+				}
+			} else if (numberOfEventTickets == 0) {
+				rightActorNeighbor ! SoldOut
 			}
-		}
 		case SoldOut => 
 			println(self.path.name + ": sold out message delivered successfully.")
 	}
 
-	if (numberOfEventTickets == 0) {
-		rightActorNeighbor ! SoldOut
-	}
 }
