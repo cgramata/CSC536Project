@@ -28,6 +28,11 @@ class KioskActor extends Actor {
 				println(self.path.name + " sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 				rightActorNeighbor ! TicketsFromMaster(newTicketsSentAroundAmount)
 			}
+			if (ticketsNeededFromMaster == 0) {
+				var newTicketsSentAroundAmount = ticketsSentAround - ticketsNeededFromMaster
+				println(self.path.name + " doesn't need any tickets, sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
+				rightActorNeighbor ! TicketsFromMaster(newTicketsSentAroundAmount)
+			}
 	}
 
 }

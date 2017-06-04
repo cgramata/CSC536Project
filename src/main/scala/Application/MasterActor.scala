@@ -9,7 +9,7 @@ class MasterActor extends Actor {
 
 	val numberKioskActors = ConfigFactory.load.getInt("number-kioskActors")
 	val numberClientActors = ConfigFactory.load.getInt("number-clientActors")
-	var numberTickets = ConfigFactory.load.getInt("number-TicketsA")
+	var numberOfEventTickets = ConfigFactory.load.getInt("number-TicketsA")
 	var numberOfTicketsNeededPerKiosk = ConfigFactory.load.getInt("number-TicketsPerKiosk")
 	var listOfKioskActorRefs = new ListBuffer[ActorRef]()
 	var leftActorNeighbor = self
@@ -32,28 +32,38 @@ class MasterActor extends Actor {
 	leftActorNeighbor = listOfKioskActorRefs(listOfKioskActorRefs.size-1)
 	rightActorNeighbor = listOfKioskActorRefs(0)
 
-	if (numberTickets == 0) {
-		rightActorNeighbor ! SoldOut
-	}
 
 	def receive = {
 		case Start => 
 			var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
-			numberTickets = numberTickets - numberOfTicketsSentAround
+			numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
 			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets")
 			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
 		case TicketsFromMaster(ticketsSentAround) =>
 			println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
 			if (ticketsSentAround > 0) {
-				numberTickets = numberTickets + ticketsSentAround				
+				numberOfEventTickets = numberOfEventTickets + ticketsSentAround				
 			}
-			if (numberTickets > 0) {
-				Thread.sleep(2000)
-				println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets.")
-				rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
-			} 
-			println(self.path.name + " has " + numberTickets + " tickets.")
+			println(self.path.name + " has " + numberOfEventTickets + " tickets.")
 		case SoldOut => 
 			println(self.path.name + ": sold out message delivered successfully.")
+	}
+
+	if (numberOfEventTickets == 0) {
+		rightActorNeighbor ! SoldOut
+	}
+
+	while (numberOfEventTickets > 0) {
+		Thread.sleep(100)
+		var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
+		if (numberOfEventTickets > numberOfTicketsSentAround) {
+			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
+			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+		}
+		if (numberOfEventTickets < numberOfTicketsSentAround) {
+			println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
+			rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+		}
+		
 	}
 }
