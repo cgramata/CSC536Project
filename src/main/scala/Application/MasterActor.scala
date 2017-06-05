@@ -12,11 +12,17 @@ class MasterActor extends Actor {
 	var numberOfEventTickets = ConfigFactory.load.getInt("number-TicketsA")
 	var numberOfTicketsNeededPerKiosk = ConfigFactory.load.getInt("number-TicketsPerKiosk")
 	var listOfKioskActorRefs = new ListBuffer[ActorRef]()
+	var listOfClientsActorRefs = new ListBuffer[ActorRef]()	
 	var leftActorNeighbor = self
 	var rightActorNeighbor = self
 
 	for (i <- 1 to numberKioskActors) {
 		listOfKioskActorRefs += context.actorOf(Props[KioskActor], name = "Kiosk"+i)
+	}
+
+	for (i <- 1 to numberClientActors) {
+		listOfClientsActorRefs += context.actorOf(Props[ClientActor], name = "Client"+i)
+		listOfClientsActorRefs(listOfClientsActorRefs.size-1) ! TheKioskActors(listOfKioskActorRefs)
 	}
 
 	for (i <- 0 to listOfKioskActorRefs.size-1) {
