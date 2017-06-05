@@ -7,10 +7,21 @@ import Common._
 
 class ClientActor extends Actor {
 	var listOfKioskActors = new ListBuffer[ActorRef]()
+	val numberOfKioskActors = ConfigFactory.load.getInt("number-kioskActors")
+	var isTheEventSoldOut = false
+	val randomNumberGenerator = scala.util.Random
 
 
 	def receive = {
 		case TheKioskActors(theKioskActors) => 
 			listOfKioskActors = theKioskActors
+			Thread.sleep(500)
+			if (isTheEventSoldOut != true) {
+				var randomIndex = randomNumberGenerator.nextInt(numberOfKioskActors)
+				println(self.path.name + " buying ticket from " + listOfKioskActors(randomIndex).path.name)
+				listOfKioskActors(randomIndex) ! BuyTicket
+			}
+		case TicketSold => 
+			println("Received ticket from " + sender.path.name)
 	}
 }

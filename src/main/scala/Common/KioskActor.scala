@@ -16,14 +16,14 @@ class KioskActor extends Actor {
 		case Neighbors(leftNeighbor, rightNeighbor) => 
 			leftActorNeighbor = leftNeighbor
 			rightActorNeighbor = rightNeighbor
-		case SoldOut => 
+		case NoMoreTickets => 
 			isEventSoldOut = true
-			rightActorNeighbor ! SoldOut
+			rightActorNeighbor ! NoMoreTickets
 		case TicketsFromMaster(ticketsSentAround) =>
 			var ticketsNeededFromMaster = numberOfTicketsNeededPerKiosk - numberTicketsInKiosk
 			if (ticketsNeededFromMaster != 0 && ticketsSentAround >= ticketsNeededFromMaster) {
 				println(self.path.name + " needs and takes " + ticketsNeededFromMaster)
-				numberTicketsInKiosk = ticketsNeededFromMaster
+				numberTicketsInKiosk = numberTicketsInKiosk + ticketsNeededFromMaster
 				var newTicketsSentAroundAmount = ticketsSentAround - ticketsNeededFromMaster
 				println(self.path.name + " sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 				rightActorNeighbor ! TicketsFromMaster(newTicketsSentAroundAmount)
@@ -33,6 +33,10 @@ class KioskActor extends Actor {
 				println(self.path.name + " doesn't need any tickets, sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 				rightActorNeighbor ! TicketsFromMaster(newTicketsSentAroundAmount)
 			}
+		case BuyTicket => 
+			numberTicketsInKiosk = numberTicketsInKiosk - 1
+			println(self.path.name + " selling ticket to " + sender.path.name)
+			sender ! TicketSold
 	}
 
 }
