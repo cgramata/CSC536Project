@@ -11,7 +11,7 @@ object TicketKioskMain extends App {
 
 	master ! Start
 
-	Thread.sleep(500)
+	Thread.sleep(10000)
 
 	system.terminate
 }

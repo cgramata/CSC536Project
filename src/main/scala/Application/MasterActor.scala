@@ -19,7 +19,7 @@ class MasterActor extends Actor {
 	for (i <- 1 to numberKioskActors) {
 		listOfKioskActorRefs += context.actorOf(Props[KioskActor], name = "Kiosk"+i)
 	}
-	
+
 
 	for (i <- 0 to listOfKioskActorRefs.size-1) {
 		if (i == 0) {
@@ -35,11 +35,6 @@ class MasterActor extends Actor {
 	leftActorNeighbor = listOfKioskActorRefs(listOfKioskActorRefs.size-1)
 	rightActorNeighbor = listOfKioskActorRefs(0)
 
-
-	for (i <- 1 to numberClientActors) {
-		listOfClientsActorRefs += context.actorOf(Props[ClientActor], name = "Client"+i)
-		listOfClientsActorRefs(listOfClientsActorRefs.size-1) ! TheKioskActors(listOfKioskActorRefs)
-	}
 
 	def receive = {
 		case Start => 
@@ -69,6 +64,11 @@ class MasterActor extends Actor {
 			}
 		case NoMoreTickets => 
 			println(self.path.name + ": sold out message delivered successfully.")
+	}
+
+	for (i <- 1 to numberClientActors) {
+		listOfClientsActorRefs += context.actorOf(Props[ClientActor], name = "Client"+i)
+		listOfClientsActorRefs(listOfClientsActorRefs.size-1) ! TheKioskActors(listOfKioskActorRefs)
 	}
 
 }

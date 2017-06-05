@@ -15,7 +15,6 @@ class ClientActor extends Actor {
 	def receive = {
 		case TheKioskActors(theKioskActors) => 
 			listOfKioskActors = theKioskActors
-			Thread.sleep(500)
 			if (isTheEventSoldOut != true) {
 				var randomIndex = randomNumberGenerator.nextInt(numberOfKioskActors)
 				println(self.path.name + " buying ticket from " + listOfKioskActors(randomIndex).path.name)
