@@ -43,8 +43,9 @@ class MasterActor extends Actor {
 			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets")
 			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
 		case TicketsFromMaster(ticketsSentAround) =>
-		var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
+			var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
 			println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
+			Thread.sleep(50)
 			if (ticketsSentAround > 0) {
 				numberOfEventTickets = numberOfEventTickets + ticketsSentAround				
 			}
