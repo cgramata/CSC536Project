@@ -38,6 +38,10 @@ class MasterActor extends Actor with Stash with ActorLogging{
 	leftActorNeighbor = listOfKioskActorRefs(listOfKioskActorRefs.size-1)
 	rightActorNeighbor = listOfKioskActorRefs(0)
 
+	for (i <- 1 to numberClientActors) {
+		listOfClientsActorRefs += context.actorOf(Props[ClientActor], name = "Client"+i)
+		listOfClientsActorRefs(listOfClientsActorRefs.size-1) ! TheKioskActors(listOfKioskActorRefs)
+	}
 
 	def receive = {
 		case Start => 
@@ -93,11 +97,6 @@ class MasterActor extends Actor with Stash with ActorLogging{
 			unstashAll()
 		case _ => 
 			stash()
-	}
-
-	for (i <- 1 to numberClientActors) {
-		listOfClientsActorRefs += context.actorOf(Props[ClientActor], name = "Client"+i)
-		listOfClientsActorRefs(listOfClientsActorRefs.size-1) ! TheKioskActors(listOfKioskActorRefs)
 	}
 
 }

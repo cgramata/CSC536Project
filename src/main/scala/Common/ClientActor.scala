@@ -23,6 +23,11 @@ class ClientActor extends Actor {
 			}
 		case TicketSold => 
 			println("Received ticket from " + sender.path.name)
+			if (isTheEventSoldOut != true) {
+				var randomIndex = randomNumberGenerator.nextInt(numberOfKioskActors)
+				println(self.path.name + " buying ticket from " + listOfKioskActors(randomIndex).path.name)
+				listOfKioskActors(randomIndex) ! BuyTicket
+			}
 		case NoMoreTickets => 
 			println("Awe shucks! " + sender.path.name + " I..." + self.path.name + ", will be back again!")
 	}
