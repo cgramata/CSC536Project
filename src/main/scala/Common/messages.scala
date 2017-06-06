@@ -11,3 +11,6 @@ case object TicketSold
 case object NoMoreTickets
 case object SoldOut
 case object Start
+case object ResumeMessageProcessing
+case object Success
+case object Failure

@@ -1,11 +1,14 @@
 package Application
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Try, Success, Failure}
 import scala.collection.mutable.ListBuffer
 import com.typesafe.config.ConfigFactory
 import Common._
 
-class MasterActor extends Actor {
+class MasterActor extends Actor with Stash with ActorLogging{
 
 	val numberKioskActors = ConfigFactory.load.getInt("number-kioskActors")
 	val numberClientActors = ConfigFactory.load.getInt("number-clientActors")
@@ -38,33 +41,58 @@ class MasterActor extends Actor {
 
 	def receive = {
 		case Start => 
-			var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
-			numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
-			println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets")
-			rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
-		case TicketsFromMaster(ticketsSentAround) =>
-			var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
-			println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
-			Thread.sleep(50)
-			if (ticketsSentAround > 0) {
-				numberOfEventTickets = numberOfEventTickets + ticketsSentAround				
+			context.become(waiting, discardOld = false) 
+			Future{
+				var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
+				numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
+				println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets")
+				rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+			}.onComplete{
+				case Failure(e) =>
+					log.error(e, "Error occured at case Start MasterActor")
+					self ! ResumeMessageProcessing
+				case Success(v) =>
+					self ! ResumeMessageProcessing
 			}
-			println(self.path.name + " has " + numberOfEventTickets + " tickets.")
-			if (numberOfEventTickets > 0) {
-				if (numberOfEventTickets > numberOfTicketsSentAround) {
-					numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
-					println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
-					rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
-				} else if (numberOfEventTickets < numberOfTicketsSentAround) {
-					numberOfEventTickets = numberOfEventTickets - numberOfEventTickets
-					println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
-					rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+		case TicketsFromMaster(ticketsSentAround) =>
+			context.become(waiting, discardOld = false)
+			Future{
+				var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
+				println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
+				Thread.sleep(50)
+				if (ticketsSentAround > 0) {
+					numberOfEventTickets = numberOfEventTickets + ticketsSentAround				
 				}
-			} else if (numberOfEventTickets == 0) {
-				rightActorNeighbor ! NoMoreTickets
+				println(self.path.name + " has " + numberOfEventTickets + " tickets.")
+				if (numberOfEventTickets > 0) {
+					if (numberOfEventTickets > numberOfTicketsSentAround) {
+						numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
+						println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
+						rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+					} else if (numberOfEventTickets < numberOfTicketsSentAround) {
+						numberOfEventTickets = numberOfEventTickets - numberOfEventTickets
+						println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
+						rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+					}
+				} else if (numberOfEventTickets == 0) {
+					rightActorNeighbor ! NoMoreTickets
+				}
+			}.onComplete{
+				case Failure(e) =>
+					log.error(e, "Error occurred")
+					self ! ResumeMessageProcessing
+				case Success(v) => 
+					self ! ResumeMessageProcessing
 			}
 		case NoMoreTickets => 
 			println(self.path.name + ": sold out message delivered successfully.")
+	}
+	def waiting: Receive = {
+		case ResumeMessageProcessing => 
+			context.unbecome()
+			unstashAll()
+		case _ => 
+			stash()
 	}
 
 	for (i <- 1 to numberClientActors) {
