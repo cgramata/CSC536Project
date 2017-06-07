@@ -63,7 +63,6 @@ class MasterActor extends Actor with Stash with ActorLogging{
 			Future{
 				var numberOfTicketsSentAround = numberOfTicketsNeededPerKiosk * numberKioskActors
 				println(self.path.name + " receiving " + ticketsSentAround + " tickets.")
-				Thread.sleep(50)
 				if (ticketsSentAround > 0) {
 					numberOfEventTickets = numberOfEventTickets + ticketsSentAround				
 				}
@@ -71,12 +70,12 @@ class MasterActor extends Actor with Stash with ActorLogging{
 				if (numberOfEventTickets > 0) {
 					if (numberOfEventTickets > numberOfTicketsSentAround) {
 						numberOfEventTickets = numberOfEventTickets - numberOfTicketsSentAround
-						println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
 						rightActorNeighbor ! TicketsFromMaster(numberOfTicketsSentAround)
+						println(self.path.name + " sending " + numberOfTicketsSentAround + " tickets to " + rightActorNeighbor.path.name)
 					} else if (numberOfEventTickets < numberOfTicketsSentAround) {
 						numberOfEventTickets = numberOfEventTickets - numberOfEventTickets
-						println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
 						rightActorNeighbor ! TicketsFromMaster(numberOfEventTickets)
+						println(self.path.name + " sending " + numberOfEventTickets + " tickets to " + rightActorNeighbor.path.name)
 					}
 				} else if (numberOfEventTickets == 0) {
 					rightActorNeighbor ! NoMoreTickets

@@ -23,7 +23,7 @@ class KioskActor extends Actor with Stash with ActorLogging{
 		case NoMoreTickets => 
 			isEventSoldOut = true
 			rightActorNeighbor ! NoMoreTickets
-		case TicketsFromMaster(ticketsSentAround) =>
+		case TicketsFromMaster(ticketsSentAround) => {
 			context.become(waiting, discardOld = false)
 			Future{
 				var ticketsNeededFromMaster = numberOfTicketsNeededPerKiosk - numberTicketsInKiosk
@@ -31,13 +31,13 @@ class KioskActor extends Actor with Stash with ActorLogging{
 					println(self.path.name + " needs and takes " + ticketsNeededFromMaster)
 					numberTicketsInKiosk = numberTicketsInKiosk + ticketsNeededFromMaster
 					var newTicketsSentAroundAmount = ticketsSentAround - ticketsNeededFromMaster
-					println(self.path.name + " sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 					rightActorNeighbor ! TicketsFromMaster(newTicketsSentAroundAmount)
+					println(self.path.name + " sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 				}
 				if (ticketsNeededFromMaster == 0) {
 					var newTicketsSentAroundAmount = ticketsSentAround - ticketsNeededFromMaster
-					println(self.path.name + " doesn't need any tickets, sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 					rightActorNeighbor ! TicketsFromMaster(newTicketsSentAroundAmount)
+					println(self.path.name + " doesn't need any tickets, sending " + newTicketsSentAroundAmount + " to " + rightActorNeighbor.path.name)
 				}
 			}.onComplete{
 				case Failure(e) =>
@@ -46,7 +46,8 @@ class KioskActor extends Actor with Stash with ActorLogging{
 				case Success(v) =>
 					self ! ResumeMessageProcessing
 			}
-		case BuyTicket => 
+		}
+		case BuyTicket => {
 			context.become(waiting, discardOld = false)
 			Future{
 				if (numberTicketsInKiosk != 0 && isEventSoldOut != true) {
@@ -64,6 +65,7 @@ class KioskActor extends Actor with Stash with ActorLogging{
 				case Success(v) =>
 					self ! ResumeMessageProcessing
 			}		
+		}
 	}
 	def waiting: Receive = {
 		case ResumeMessageProcessing => 
