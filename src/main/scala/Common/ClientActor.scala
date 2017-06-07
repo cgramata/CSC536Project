@@ -18,14 +18,14 @@ class ClientActor extends Actor with Stash with ActorLogging{
 	def receive = {
 		case TheKioskActors(theKioskActors) => {
 			listOfKioskActors = theKioskActors
-			Thread.sleep(10)
+			Thread.sleep(50)
 			context.become(waiting, discardOld = false)
 			Future{
 				var randomIndex = randomNumberGenerator.nextInt(numberOfKioskActors)
-				if (isTheEventSoldOut != true) {
+				
 					listOfKioskActors(randomIndex) ! BuyTicket
 					println(self.path.name + " bought ticket from " + listOfKioskActors(randomIndex).path.name)
-				}
+				
 			}.onComplete{
 				case Failure(e) =>
 					log.error(e, "Error occured at case Start MasterActor")
@@ -40,10 +40,10 @@ class ClientActor extends Actor with Stash with ActorLogging{
 			Future{
 				println("Received ticket from " + sender.path.name)
 				var randomIndex = randomNumberGenerator.nextInt(numberOfKioskActors)
-				if (isTheEventSoldOut != true) {
+				
 					listOfKioskActors(randomIndex) ! BuyTicket
 					println(self.path.name + " bought ticket from " + listOfKioskActors(randomIndex).path.name)
-				}
+				
 			}.onComplete{
 				case Failure(e) =>
 					log.error(e, "Error occured at case Start MasterActor")
@@ -53,6 +53,7 @@ class ClientActor extends Actor with Stash with ActorLogging{
 			}
 		}
 		case NoMoreTickets => 
+			isTheEventSoldOut = false
 			println("Awe shucks! " + sender.path.name + " I..." + self.path.name + ", will be back again!")
 	}
 	def waiting: Receive = {
