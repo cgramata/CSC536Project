@@ -15,6 +15,7 @@ class KioskActor extends Actor with Stash with ActorLogging{
 	var isEventSoldOut = false
 	var leftActorNeighbor = self
 	var rightActorNeighbor = self
+	var requestingClient = self
 
 	def receive = {
 		case Neighbors(leftNeighbor, rightNeighbor) => 
@@ -47,7 +48,20 @@ class KioskActor extends Actor with Stash with ActorLogging{
 					self ! ResumeMessageProcessing
 			}
 		}
+		case CanIHaveMoreTickets => {
+			if (numberTicketsInKiosk > 1) {
+				numberTicketsInKiosk = numberTicketsInKiosk - 1
+				var giveNeighborTicket = 1
+				sender ! giveNeighborTicket
+			} else {
+				sender ! IHaveNothing
+			}
+		}
+		case IHaveNothing => {
+			requestingClient ! ComeBackLater
+		}
 		case BuyTicket => {
+			requestingClient = sender
 			context.become(waiting, discardOld = false)
 			Future{
 				if (numberTicketsInKiosk != 0 && isEventSoldOut != true) {
@@ -57,6 +71,9 @@ class KioskActor extends Actor with Stash with ActorLogging{
 				} else if (numberTicketsInKiosk == 0 && isEventSoldOut == true) {
 					println(self.path.name + " to " + sender.path.name + ": sorry, all sold out.")
 					sender ! NoMoreTickets
+				} else if (numberTicketsInKiosk == 0 && isEventSoldOut != false) {
+					sender ! ComeBackLater
+					rightActorNeighbor ! CanIHaveMoreTickets
 				}
 			}.onComplete{
 				case Failure(e) =>

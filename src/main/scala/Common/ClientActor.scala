@@ -55,6 +55,13 @@ class ClientActor extends Actor with Stash with ActorLogging{
 		case NoMoreTickets => 
 			isTheEventSoldOut = false
 			println("Awe shucks! " + sender.path.name + " I..." + self.path.name + ", will be back again!")
+		case ComeBackLater =>  {
+			println(self.path.name + ", coming back later")
+			Thread.sleep(50)
+			sender ! BuyTicket
+			println(self.path.name + " bought ticket from " + sender.path.name)
+		}
+
 	}
 	def waiting: Receive = {
 		case ResumeMessageProcessing => 
